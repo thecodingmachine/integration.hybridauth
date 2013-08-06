@@ -1,0 +1,30 @@
+{
+    "name": "mouf/integration.hybridauth",
+    "description": "This package contains bindings between the Mouf and HybridAuth, a great library to implement social logins (on Facebook, Twitter, etc...).",
+    "keywords": ["integration", "hybridauth", "mouf", "splash", "facebook", "twitter", "google", "linkedin"],
+    "homepage": "http://mouf-php.com/packages/mouf/integration.hybridauth",
+    "type": "mouf-library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "David Négrier",
+            "email": "d.negrier@thecodingmachine.com",
+            "homepage": "http://mouf-php.com"
+        }
+    ],
+    "require": {
+    	"php": ">=5.3.0",
+    	"hybridauth/hybridauth": "dev-master",
+	"mouf/mvc.splash-common": "~4.0"
+    },
+    "autoload": {
+        "psr-0": {
+            "Mouf": "src/"
+        }
+    },
+    "extra": {
+	    "mouf": {
+	    	"logo": "logo.png"
+	    }
+	}
+}
