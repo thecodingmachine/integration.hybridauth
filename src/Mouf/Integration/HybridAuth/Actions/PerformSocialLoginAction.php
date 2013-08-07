@@ -10,6 +10,9 @@ use Mouf\Database\DBConnection\ConnectionInterface;
 use SQLParser\Query\Select;
 use Mouf\Security\UserService\UserServiceInterface;
 use Mouf\Security\UserService\UserDaoInterface;
+use Mouf\Security\UserService\UserManagerServiceInterface;
+use Mouf\Integration\HybridAuth\SocialUserBean;
+use Mouf\Validator\MoufValidatorInterface;
 
 /**
  * This action is typically triggered in the onSuccess callback of the SocialAuthentication class.
@@ -62,6 +65,13 @@ class PerformSocialLoginAction implements ActionInterface {
 	private $userService;
 	
 	/**
+	 * The user manager service (used to create the new user)
+	 *
+	 * @var UserManagerServiceInterface
+	 */
+	private $userManagerService;
+	
+	/**
 	 * When a user logs in via Facebook or another social network for the first time,
 	 * if the user has already an account on the site, should we try to merge the 2 accounts
 	 * based on the email address?
@@ -78,24 +88,52 @@ class PerformSocialLoginAction implements ActionInterface {
 	private $findUserIdFromMail;
 	
 	/**
+	 * List of actions to be performed if the user already existed in database.
+	 * You will usually redirect the user to some place in your application.
+	 * @var ActionInterface[]
+	 */
+	private $onUserLogged;
+	
+	/**
+	 * List of actions to be performed if the user did not exist in database and has been just created.
+	 * You will usually redirect the user to some place in your application.
+	 * @var ActionInterface[]
+	 */
+	private $onUserCreated;
+
+	/**
 	 * 
+	 * @param Variable $socialProviderName
 	 * @param Variable $socialProfile
 	 * @param Select $findSocialUser
 	 * @param ConnectionInterface $dbConnection
-	 * @param bool $bindOnEmail
-	 * @param Select $findUserIdFromMail
+	 * @param UserManagerServiceInterface $userManagerService
+	 * @param bool $bindOnEmail When a user logs in via Facebook or another social network for the first time, if the user has already an account on the site, should we try to merge the 2 accounts based on the email address?
+	 * @param Select $findUserIdFromMail A request that finds a user ID based on its mail address.
+	 * @param ActionInterface[] $onUserLogged List of actions to be performed if the user already existed in database. You will usually redirect the user to some place in your application.
+	 * @param ActionInterface[] $onUserCreated List of actions to be performed if the user did not exist in database and has been just created. You will usually redirect the user to some place in your application.
 	 */
 	public function __construct(Variable $socialProviderName, Variable $socialProfile, Select $findSocialUser,
-			ConnectionInterface $dbConnection, $bindOnEmail = true, Select $findUserIdFromMail = null) {
+			ConnectionInterface $dbConnection, UserDaoInterface $userDao, UserServiceInterface $userService, UserManagerServiceInterface $userManagerService, $bindOnEmail = true, Select $findUserIdFromMail = null,
+			array $onUserLogged = array(), array $onUserCreated = array()) {
 		$this->socialProviderName = $socialProviderName;
 		$this->socialProfile = $socialProfile;
 		$this->findSocialUser = $findSocialUser;
 		$this->dbConnection = $dbConnection;
+		$this->userDao = $userDao;
+		$this->userService = $userService;
+		$this->userManagerService = $userManagerService;
 		$this->bindOnEmail = $bindOnEmail;
 		$this->findUserIdFromMail =$findUserIdFromMail;
+		$this->onUserLogged = $onUserLogged;
+		$this->onUserCreated = $onUserCreated;
 	}
 	
 	/**
+	 * This function will check in database if the user (in the socialProviderProfile) does exist or not.
+	 * If it does not exist, it will be created.
+	 * If it does not exist but a user exists with the same email adress, it can be bound.
+	 * 
 	 * (non-PHPdoc)
 	 * @see \Mouf\Utils\Action\ActionInterface::run()
 	 */
@@ -113,25 +151,102 @@ class PerformSocialLoginAction implements ActionInterface {
 		if ($userId) {
 			$userBean = $this->userDao->getUserById($userId);
 			$this->userService->loginWithoutPassword($userBean->getLogin());
+			foreach ($this->onUserLogged as $action) {
+				$action->run();
+			}
 			return;
 		}
 		
 		// 2- if user never authenticated, here lets check if the user email we got from the provider already exists in our database
 		// if authentication does not exist, but the email address returned  by the provider does exist in database,
-		// then we tell the user that the email  is already in use
-		// but, its up to you if you want to associate the authentication with the user having the adresse email in the database
 		if($user_profile->email && $this->bindOnEmail){
 			$sql = $this->findUserIdFromMail->toSql(array("email"=>$user_profile->email));
 			$userId = $this->dbConnection->getOne($sql);
 			
 			if ($userId) {
+				
+				$sql = "INSERT INTO authentications (user_id, provider, provider_uid, email, display_name, first_name,
+					last_name, profile_url, website_url)
+				VALUES ("
+						.$this->dbConnection->quoteSmart($userId).","
+						.$this->dbConnection->quoteSmart($providerName).","
+						.$this->dbConnection->quoteSmart($user_profile->identifier).","
+						.$this->dbConnection->quoteSmart($user_profile->email).","
+						.$this->dbConnection->quoteSmart($user_profile->displayName).","
+						.$this->dbConnection->quoteSmart($user_profile->firstName).","
+						.$this->dbConnection->quoteSmart($user_profile->lastName).","
+						.$this->dbConnection->quoteSmart($user_profile->profileURL).","
+						.$this->dbConnection->quoteSmart($user_profile->webSiteURL)
+						.")";
+				
+				$this->dbConnection->exec($sql);
+				
 				$userBean = $this->userDao->getUserById($userId);
 				$this->userService->loginWithoutPassword($userBean->getLogin());
+				foreach ($this->onUserLogged as $action) {
+					$action->run();
+				}
 				return;
 			}
 		}
 		
 		// 3- the user does not exist in database, we must create it.
+		$user = new SocialUserBean();
+		if ($user_profile->email) {
+			$user->setLogin($user_profile->email);
+			$user->setEmail($user_profile->email);
+		}
+		$user->setLogin($this->generateLogin($user_profile));
+		$user->setFirstName($user_profile->firstName);
+		$user->setLastName($user_profile->lastName);
 		
+		$userId = $this->userManagerService->saveUser($user);
+		
+		$sql = "INSERT INTO authentications (user_id, provider, provider_uid, email, display_name, first_name,
+					last_name, profile_url, website_url)
+				VALUES ("
+				.$this->dbConnection->quoteSmart($userId).","
+				.$this->dbConnection->quoteSmart($providerName).","
+				.$this->dbConnection->quoteSmart($user_profile->identifier).","
+				.$this->dbConnection->quoteSmart($user_profile->email).","
+				.$this->dbConnection->quoteSmart($user_profile->displayName).","
+				.$this->dbConnection->quoteSmart($user_profile->firstName).","
+				.$this->dbConnection->quoteSmart($user_profile->lastName).","
+				.$this->dbConnection->quoteSmart($user_profile->profileURL).","
+				.$this->dbConnection->quoteSmart($user_profile->webSiteURL)
+				.")";
+		
+		$this->dbConnection->exec($sql);
+		
+		$userBean = $this->userDao->getUserById($userId);
+		$this->userService->loginWithoutPassword($userBean->getLogin());
+		
+		foreach ($this->onUserCreated as $action) {
+			$action->run();
+		}
 	}
+	
+	/**
+	 * Generates a login name from the information we have.
+	 * 
+	 * @param object $user_profile
+	 */
+	protected function generateLogin($user_profile) {
+		if ($user_profile->email) {
+			$login = $user_profile->email;
+		} else {
+			$login = $user_profile->firstName.".".$user_profile->lastName;
+		}
+		if ($this->userDao->getUserByLogin($login) == null) {
+			return $login;
+		}
+		$count = 2;
+		while (true) {
+			if ($this->userDao->getUserByLogin($login.'_'.$count) == null) {
+				return $login.'_'.$count;
+			}
+			$count++;
+		}
+	}
+	
 }
