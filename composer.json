@@ -31,8 +31,14 @@
 	    	"logo": "logo.png",
 			"require-admin": [
     			"src/HybridAuthAdmin.php"
-   			]
-	    	
+   			],
+   			"install": [
+			{
+				"type": "url",
+	    		"url": "hybridauthinstall/",
+	    		"description": "The install process of HybridAuth proposes to set up Facebook, Twitter or Google authentication and configures all instances."
+			}
+			]
 	    }
 	}
 }
