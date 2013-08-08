@@ -6,6 +6,37 @@
 		value="<?php echo plainstring_to_htmlprotected($this->selfedit) ?>" />
 
 	<div class="control-group">
+		<label class="control-label">Redirect after login:</label>
+		<div class="controls">
+			<input type="text" name="redirect_login"
+				value="<?php //echo plainstring_to_htmlprotected($this->sourceDirectory) ?>"></input>
+			<span class="help-block">The URL to redirect to after login. Keep empty to redirect to home.
+			Do not start with a "/" if you want the URL to be relative to ROOT_URL.</span>
+		</div>
+	</div>
+	
+	<div class="control-group">
+		<label class="control-label">Redirect after user creation:</label>
+		<div class="controls">
+			<input type="text" name="redirect_create"
+				value="<?php //echo plainstring_to_htmlprotected($this->sourceDirectory) ?>"></input>
+			<span class="help-block">The URL to redirect to after a user logs in for the first time. Keep empty to redirect to home.
+			Do not start with a "/" if you want the URL to be relative to ROOT_URL.</span>
+		</div>
+	</div>
+
+	<div class="control-group">
+		<label class="control-label">Redirect after failure:</label>
+		<div class="controls">
+			<input type="text" name="redirect_failure"
+				value="<?php //echo plainstring_to_htmlprotected($this->sourceDirectory) ?>"></input>
+			<span class="help-block">The URL to redirect to after a user cancels the login in the social network. Keep empty to redirect to home.
+			Do not start with a "/" if you want the URL to be relative to ROOT_URL.</span>
+		</div>
+	</div>
+
+	
+	<div class="control-group">
 		<div class="controls">
 			<label class="checkbox"> <input type="checkbox" name="facebook" /> Configure Facebook Connect</label>
 		</div>

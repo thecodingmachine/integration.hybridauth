@@ -5,6 +5,7 @@ use Mouf\MoufManager;
 use Mouf\Mvc\Splash\Controllers\Controller;
 use Mouf\Html\Template\TemplateInterface;
 use Mouf\Html\HtmlElement\HtmlBlock;
+use Mouf\Actions\InstallUtils;
 
 /**
  * This class is displaying the HybridAuth install controller. 
@@ -105,6 +106,7 @@ class HybridAuthInstallController extends Controller {
 	public function generate($facebook = "", $facebook_id = "", $facebook_secret = "", $facebook_scope = "", 
 			$google = "", $google_id = "", $google_secret = "",
 			$twitter = "", $twitter_key = "", $twitter_secret = "",
+			$redirect_login = "", $redirect_create = "", $redirect_failure = "",
 			$selfedit="false") {
 		$this->selfedit = $selfedit;
 		
@@ -141,23 +143,23 @@ class HybridAuthInstallController extends Controller {
 			$configPhpConstants['FACEBOOK_SCOPE'] = $facebook_scope;
 				
 			
-			$googleProvider = InstallUtils::getOrCreateInstance('facebookProvider', 'Mouf\\Integration\\HybridAuth\\GenericProvider', $moufManager);
+			$facebookProvider = InstallUtils::getOrCreateInstance('facebookProvider', 'Mouf\\Integration\\HybridAuth\\GenericProvider', $moufManager);
 			
-			if (!$facebookProvider->getConstructorArgumentProperty('setProviderName')->isValueSet()) {
+			if (!$facebookProvider->getSetterProperty('setProviderName')->isValueSet()) {
 				$facebookProvider->getSetterProperty('setProviderName')->setValue('Facebook');
 			}
-			if (!$facebookProvider->getConstructorArgumentProperty('setEnabled')->isValueSet()) {
+			if (!$facebookProvider->getSetterProperty('setEnabled')->isValueSet()) {
 				$facebookProvider->getSetterProperty('setEnabled')->setValue(true);
 			}
-			if (!$facebookProvider->getConstructorArgumentProperty('setId')->isValueSet()) {
+			if (!$facebookProvider->getSetterProperty('setId')->isValueSet()) {
 				$facebookProvider->getSetterProperty('setId')->setValue('FACEBOOK_ID');
 				$facebookProvider->getSetterProperty('setId')->setOrigin("config");
 			}
-			if (!$facebookProvider->getConstructorArgumentProperty('setSecret')->isValueSet()) {
+			if (!$facebookProvider->getSetterProperty('setSecret')->isValueSet()) {
 				$facebookProvider->getSetterProperty('setSecret')->setValue('FACEBOOK_SECRET');
 				$facebookProvider->getSetterProperty('setSecret')->setOrigin("config");
 			}
-			if (!$facebookProvider->getConstructorArgumentProperty('setScope')->isValueSet()) {
+			if (!$facebookProvider->getSetterProperty('setScope')->isValueSet()) {
 				$facebookProvider->getSetterProperty('setScope')->setValue('FACEBOOK_SCOPE');
 				$facebookProvider->getSetterProperty('setScope')->setOrigin("config");
 			}
@@ -178,17 +180,17 @@ class HybridAuthInstallController extends Controller {
 			
 			$googleProvider = InstallUtils::getOrCreateInstance('googleProvider', 'Mouf\\Integration\\HybridAuth\\GenericProvider', $moufManager);
 			
-			if (!$googleProvider->getConstructorArgumentProperty('setProviderName')->isValueSet()) {
+			if (!$googleProvider->getSetterProperty('setProviderName')->isValueSet()) {
 				$googleProvider->getSetterProperty('setProviderName')->setValue('Google');
 			}
-			if (!$googleProvider->getConstructorArgumentProperty('setEnabled')->isValueSet()) {
+			if (!$googleProvider->getSetterProperty('setEnabled')->isValueSet()) {
 				$googleProvider->getSetterProperty('setEnabled')->setValue(true);
 			}
-			if (!$googleProvider->getConstructorArgumentProperty('setId')->isValueSet()) {
+			if (!$googleProvider->getSetterProperty('setId')->isValueSet()) {
 				$googleProvider->getSetterProperty('setId')->setValue('GOOGLE_ID');
 				$googleProvider->getSetterProperty('setId')->setOrigin("config");
 			}
-			if (!$googleProvider->getConstructorArgumentProperty('setSecret')->isValueSet()) {
+			if (!$googleProvider->getSetterProperty('setSecret')->isValueSet()) {
 				$googleProvider->getSetterProperty('setSecret')->setValue('GOOGLE_SECRET');
 				$googleProvider->getSetterProperty('setSecret')->setOrigin("config");
 			}
@@ -209,17 +211,17 @@ class HybridAuthInstallController extends Controller {
 			
 			$twitterProvider = InstallUtils::getOrCreateInstance('twitterProvider', 'Mouf\\Integration\\HybridAuth\\GenericProvider', $moufManager);
 			
-			if (!$twitterProvider->getConstructorArgumentProperty('setProviderName')->isValueSet()) {
+			if (!$twitterProvider->getSetterProperty('setProviderName')->isValueSet()) {
 				$twitterProvider->getSetterProperty('setProviderName')->setValue('Twitter');
 			}
-			if (!$twitterProvider->getConstructorArgumentProperty('setEnabled')->isValueSet()) {
+			if (!$twitterProvider->getSetterProperty('setEnabled')->isValueSet()) {
 				$twitterProvider->getSetterProperty('setEnabled')->setValue(true);
 			}
-			if (!$twitterProvider->getConstructorArgumentProperty('setKey')->isValueSet()) {
+			if (!$twitterProvider->getSetterProperty('setKey')->isValueSet()) {
 				$twitterProvider->getSetterProperty('setKey')->setValue('TWITTER_KEY');
 				$twitterProvider->getSetterProperty('setKey')->setOrigin("config");
 			}
-			if (!$twitterProvider->getConstructorArgumentProperty('setSecret')->isValueSet()) {
+			if (!$twitterProvider->getSetterProperty('setSecret')->isValueSet()) {
 				$twitterProvider->getSetterProperty('setSecret')->setValue('TWITTER_SECRET');
 				$twitterProvider->getSetterProperty('setSecret')->setOrigin("config");
 			}
@@ -231,9 +233,9 @@ class HybridAuthInstallController extends Controller {
 		
 		
 		// These instances are expected to exist when the installer is run.
-		$dbConnection = $moufManager->getInstance('dbConnection');
-		$userService = $moufManager->getInstance('userService');
-		$userMessageService = $moufManager->getInstance('userMessageService');
+		$dbConnection = $moufManager->getInstanceDescriptor('dbConnection');
+		$userService = $moufManager->getInstanceDescriptor('userService');
+		$userMessageService = $moufManager->getInstanceDescriptor('userMessageService');
 		
 		// Let's create the instances.
 		$socialAuthenticateUrl = InstallUtils::getOrCreateInstance('socialAuthenticateUrl', 'Mouf\\Mvc\\Splash\\UrlEntryPoint', $moufManager);
@@ -265,9 +267,12 @@ class HybridAuthInstallController extends Controller {
 		$anonymousColRef5 = $moufManager->createInstance('SQLParser\\Node\\ColRef');
 		$anonymousParameter3 = $moufManager->createInstance('SQLParser\\Node\\Parameter');
 		$anonymousParamAvailableCondition3 = $moufManager->createInstance('Mouf\\Database\\QueryWriter\\Condition\\ParamAvailableCondition');
+		$anonymousRedirect = $moufManager->createInstance('Mouf\\Utils\\Action\\Redirect');
+		$anonymousRedirect2 = $moufManager->createInstance('Mouf\\Utils\\Action\\Redirect');
 		$anonymousDisplayMessageAction = $moufManager->createInstance('Mouf\\Html\\Widgets\\MessageService\\Service\\Actions\\DisplayMessageAction');
 		$anonymousUserMessage = $moufManager->createInstance('Mouf\\Html\\Widgets\\MessageService\\Service\\UserMessage');
-		
+		$anonymousRedirect3 = $moufManager->createInstance('Mouf\\Utils\\Action\\Redirect');
+
 		// Let's bind instances together.
 		if (!$socialAuthenticateUrl->getConstructorArgumentProperty('url')->isValueSet()) {
 			$socialAuthenticateUrl->getConstructorArgumentProperty('url')->setValue('authenticate');
@@ -278,11 +283,11 @@ class HybridAuthInstallController extends Controller {
 		if (!$hybridAuthFactory->getConstructorArgumentProperty('providers')->isValueSet()) {
 			$hybridAuthFactory->getConstructorArgumentProperty('providers')->setValue($providers);
 		}
-		if (!$hybridAuthFactory->getConstructorArgumentProperty('setDebugMode')->isValueSet()) {
-			$hybridAuthFactory->getSetterProperty('setDebugMode')->setValue(true);
+		if (!$hybridAuthFactory->getSetterProperty('setDebugMode')->isValueSet()) {
+			$hybridAuthFactory->getSetterProperty('setDebugMode')->setValue(false);
 		}
-		if (!$hybridAuthFactory->getConstructorArgumentProperty('setDebugFile')->isValueSet()) {
-			$hybridAuthFactory->getSetterProperty('setDebugFile')->setValue('hybridAuth.log');
+		if (!$hybridAuthFactory->getSetterProperty('setDebugFile')->isValueSet()) {
+			$hybridAuthFactory->getSetterProperty('setDebugFile')->setValue('');
 		}
 		
 		
@@ -295,7 +300,7 @@ class HybridAuthInstallController extends Controller {
 		$anonymousSocialAuthenticateAction->getConstructorArgumentProperty('errorMessage')->setValue($socialLoginErrorMessage);
 		$anonymousSocialAuthenticateAction->getConstructorArgumentProperty('errorException')->setValue($socialLoginException);
 		$anonymousSocialAuthenticateAction->getConstructorArgumentProperty('onSuccess')->setValue(array(0 => $anonymousPerformSocialLoginAction, ));
-		$anonymousSocialAuthenticateAction->getConstructorArgumentProperty('onFailure')->setValue(array(0 => $anonymousDisplayMessageAction, ));
+		$anonymousSocialAuthenticateAction->getConstructorArgumentProperty('onFailure')->setValue(array(0 => $anonymousDisplayMessageAction, 1 => $anonymousRedirect3, ));
 		$anonymousPerformSocialLoginAction->getConstructorArgumentProperty('socialProviderName')->setValue($socialProviderName);
 		$anonymousPerformSocialLoginAction->getConstructorArgumentProperty('socialProfile')->setValue($socialProfile);
 		$anonymousPerformSocialLoginAction->getConstructorArgumentProperty('findSocialUser')->setValue($anonymousSelect);
@@ -303,6 +308,8 @@ class HybridAuthInstallController extends Controller {
 		$anonymousPerformSocialLoginAction->getConstructorArgumentProperty('userService')->setValue($userService);
 		$anonymousPerformSocialLoginAction->getConstructorArgumentProperty('bindOnEmail')->setValue(true);
 		$anonymousPerformSocialLoginAction->getConstructorArgumentProperty('findUserIdFromMail')->setValue($anonymousSelect2);
+		$anonymousPerformSocialLoginAction->getConstructorArgumentProperty('onUserLogged')->setValue(array(0 => $anonymousRedirect, ));
+		$anonymousPerformSocialLoginAction->getConstructorArgumentProperty('onUserCreated')->setValue(array(0 => $anonymousRedirect2, ));
 		$anonymousSelect->getSetterProperty('setColumns')->setValue(array(0 => $anonymousColRef, ));
 		$anonymousSelect->getSetterProperty('setFrom')->setValue(array(0 => $anonymousTable, ));
 		$anonymousSelect->getSetterProperty('setWhere')->setValue($anonymousAndOp);
@@ -339,6 +346,9 @@ class HybridAuthInstallController extends Controller {
 		$anonymousUserMessage->getConstructorArgumentProperty('message')->setValue($socialLoginErrorMessage);
 		$anonymousUserMessage->getConstructorArgumentProperty('type')->setValue('error');
 		
+		$anonymousRedirect->getSetterProperty('setUrl')->setValue($redirect_login);
+		$anonymousRedirect2->getSetterProperty('setUrl')->setValue($redirect_create);
+		$anonymousRedirect3->getSetterProperty('setUrl')->setValue($redirect_failure);
 		
 		$this->moufManager->rewriteMouf();
 		
