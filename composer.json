@@ -38,13 +38,13 @@
 	    		"url": "hybridauthinstall/",
 	    		"description": "The install process of HybridAuth proposes to set up Facebook, Twitter or Google authentication and configures all instances."
 			}
-			]
+			],
 			"doc": [
 	    		{
 	    			"title": "Advanced configuration",
 	    			"url": "doc/advanced.md"
 	    		}
-	    		],
+	    		]
 	    }
 	}
 }
