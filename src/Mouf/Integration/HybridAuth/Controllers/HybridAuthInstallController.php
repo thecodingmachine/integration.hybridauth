@@ -128,13 +128,13 @@ class HybridAuthInstallController extends Controller {
 		$providers = array();
 		
 		if ($facebook) {
-			if (!isset($constants['FACEBOOK_ID'])) {
+			if ($configManager->getConstantDefinition('FACEBOOK_ID') === null) {
 				$configManager->registerConstant('FACEBOOK_ID', 'string', '', 'The Facebook ID used by Facebook API. You can create an app here: https://developers.facebook.com/apps');
 			}
-			if (!isset($constants['FACEBOOK_SECRET'])) {
+			if ($configManager->getConstantDefinition('FACEBOOK_SECRET') === null) {
 				$configManager->registerConstant('FACEBOOK_SECRET', 'string', '', 'The Facebook secret used by Facebook API. You can create an app here: https://developers.facebook.com/apps');
 			}
-			if (!isset($constants['FACEBOOK_SCOPE'])) {
+			if ($configManager->getConstantDefinition('FACEBOOK_SCOPE') === null) {
 				$configManager->registerConstant('FACEBOOK_SCOPE', 'string', '', 'The Facebook scope requested by the application.
 	For instance: "email, user_about_me, user_birthday, user_hometown"');
 			}
