@@ -6,6 +6,7 @@ use Mouf\Mvc\Splash\Controllers\Controller;
 use Mouf\Html\Template\TemplateInterface;
 use Mouf\Html\HtmlElement\HtmlBlock;
 use Mouf\Actions\InstallUtils;
+use Mouf\Html\Renderer\RendererUtils;
 
 /**
  * This class is displaying the HybridAuth install controller. 
@@ -349,6 +350,79 @@ class HybridAuthInstallController extends Controller {
 		$anonymousRedirect->getSetterProperty('setUrl')->setValue($redirect_login);
 		$anonymousRedirect2->getSetterProperty('setUrl')->setValue($redirect_create);
 		$anonymousRedirect3->getSetterProperty('setUrl')->setValue($redirect_failure);
+		
+		$socialProfilePicture = InstallUtils::getOrCreateInstance('socialProfilePicture', 'Mouf\\Integration\\HybridAuth\\Html\\SocialProfilePicture', $moufManager);
+		if (!$socialProfilePicture->getConstructorArgumentProperty('hybridAuth')->isValueSet()) {
+			$socialProfilePicture->getConstructorArgumentProperty('hybridAuth')->setValue($hybridAuthFactory);
+		}
+		
+		if ($facebook) {
+			// Let's create the instance.
+			$facebookConnectButton = InstallUtils::getOrCreateInstance('facebookConnectButton', 'Mouf\\Integration\\HybridAuth\\Html\\SocialConnectButton', $moufManager);
+			
+			// Let's bind instances together.
+			if (!$facebookConnectButton->getConstructorArgumentProperty('hybridAuth')->isValueSet()) {
+				$facebookConnectButton->getConstructorArgumentProperty('hybridAuth')->setValue($hybridAuthFactory);
+			}
+			if (!$facebookConnectButton->getConstructorArgumentProperty('provider')->isValueSet()) {
+				$facebookConnectButton->getConstructorArgumentProperty('provider')->setValue($facebookProvider);
+			}
+			if (!$facebookConnectButton->getConstructorArgumentProperty('url')->isValueSet()) {
+				$facebookConnectButton->getConstructorArgumentProperty('url')->setValue('authenticate?provider=Facebook');
+			}
+			if (!$facebookConnectButton->getConstructorArgumentProperty('imageUrl')->isValueSet()) {
+				$facebookConnectButton->getConstructorArgumentProperty('imageUrl')->setValue('vendor/mouf/integration.hybridauth/images/Facebook.png');
+			}
+		}
+		
+		if ($google) {
+			// Let's create the instance.
+			$googleConnectButton = InstallUtils::getOrCreateInstance('googleConnectButton', 'Mouf\\Integration\\HybridAuth\\Html\\SocialConnectButton', $moufManager);
+				
+			// Let's bind instances together.
+			if (!$googleConnectButton->getConstructorArgumentProperty('hybridAuth')->isValueSet()) {
+				$googleConnectButton->getConstructorArgumentProperty('hybridAuth')->setValue($hybridAuthFactory);
+			}
+			if (!$googleConnectButton->getConstructorArgumentProperty('provider')->isValueSet()) {
+				$googleConnectButton->getConstructorArgumentProperty('provider')->setValue($googleProvider);
+			}
+			if (!$googleConnectButton->getConstructorArgumentProperty('url')->isValueSet()) {
+				$googleConnectButton->getConstructorArgumentProperty('url')->setValue('authenticate?provider=Google');
+			}
+			if (!$googleConnectButton->getConstructorArgumentProperty('imageUrl')->isValueSet()) {
+				$googleConnectButton->getConstructorArgumentProperty('imageUrl')->setValue('vendor/mouf/integration.hybridauth/images/Google.png');
+			}
+		}
+		
+		if ($twitter) {
+			// Let's create the instance.
+			$twitterConnectButton = InstallUtils::getOrCreateInstance('twitterConnectButton', 'Mouf\\Integration\\HybridAuth\\Html\\SocialConnectButton', $moufManager);
+		
+			// Let's bind instances together.
+			if (!$twitterConnectButton->getConstructorArgumentProperty('hybridAuth')->isValueSet()) {
+				$twitterConnectButton->getConstructorArgumentProperty('hybridAuth')->setValue($hybridAuthFactory);
+			}
+			if (!$twitterConnectButton->getConstructorArgumentProperty('provider')->isValueSet()) {
+				$twitterConnectButton->getConstructorArgumentProperty('provider')->setValue($twitterProvider);
+			}
+			if (!$twitterConnectButton->getConstructorArgumentProperty('url')->isValueSet()) {
+				$twitterConnectButton->getConstructorArgumentProperty('url')->setValue('authenticate?provider=Twitter');
+			}
+			if (!$twitterConnectButton->getConstructorArgumentProperty('imageUrl')->isValueSet()) {
+				$twitterConnectButton->getConstructorArgumentProperty('imageUrl')->setValue('vendor/mouf/integration.hybridauth/images/Twitter.png');
+			}
+		}
+		
+		// In case there is a userDao, let's bind it.
+		if ($moufManager->has('userDao')) {
+			$userDao = $moufManager->getInstanceDescriptor('userDao');
+			$anonymousPerformSocialLoginAction->getConstructorArgumentProperty('userDao')->setValue($userDao);
+		}
+		
+		
+		
+		// Finally, let's declare a renderer
+		RendererUtils::createPackageRenderer($moufManager, "mouf/integration.hybridauth");
 		
 		$this->moufManager->rewriteMouf();
 		

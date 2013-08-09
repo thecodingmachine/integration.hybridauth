@@ -139,8 +139,8 @@ class PerformSocialLoginAction implements ActionInterface {
 	 */
 	public function run() {
 		$providerName = ValueUtils::val($this->socialProviderName);
-		$socialProfile = ValueUtils::val($this->socialProfile);
-		$providerUid = $socialProfile->identifier;
+		$user_profile = ValueUtils::val($this->socialProfile);
+		$providerUid = $user_profile->identifier;
 		
 		$sql = $this->findSocialUser->toSql(array("provider"=>$providerName,
 											"provider_uid"=>$providerUid), $this->dbConnection);

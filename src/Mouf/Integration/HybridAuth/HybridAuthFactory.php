@@ -44,7 +44,7 @@ class HybridAuthFactory {
 	}
 	
 	/**
-	 * 
+	 * @return Hybrid_Auth
 	 */
 	public function getHybridAuth() {
 		if (!$this->hybridAuth) {
@@ -89,7 +89,12 @@ class HybridAuthFactory {
 		$this->debugFile = $debugFile;
 		return $this;
 	}
-	
-	
+
+	/**
+	 * @return ProvidersInterface[]
+	 */
+	public function getProviders() {
+		return $this->providers;
+	}
 	
 }
