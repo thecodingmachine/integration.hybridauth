@@ -7,6 +7,7 @@ use Mouf\Html\Template\TemplateInterface;
 use Mouf\Html\HtmlElement\HtmlBlock;
 use Mouf\Actions\InstallUtils;
 use Mouf\Html\Renderer\RendererUtils;
+use Mouf\Database\Patcher\DatabasePatchInstaller;
 
 /**
  * This class is displaying the HybridAuth install controller. 
@@ -419,6 +420,12 @@ class HybridAuthInstallController extends Controller {
 			$anonymousPerformSocialLoginAction->getConstructorArgumentProperty('userDao')->setValue($userDao);
 		}
 		
+		// Let's now declare the database patch that will create the "authorisations" table:
+		DatabasePatchInstaller::registerPatch($moufManager,
+			"create_authentications_table",
+			"Creates the 'authentications' table that will store authentication related data from social networks.",
+			"vendor/mouf/integration.hybridauth/database/up/create_authentications.sql"
+			);
 		
 		
 		// Finally, let's declare a renderer

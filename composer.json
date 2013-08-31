@@ -19,7 +19,8 @@
 		"mouf/utils.value.common-value": "~1.0",
 		"mouf/utils.action.action-interface": "~1.0",
 		"mouf/database.querywriter": "~3.0",
-		"mouf/security.userservice.extensions": "~1.0"
+		"mouf/security.userservice.extensions": "~1.0",
+		"mouf/database.patcher": "~1.0"
     },
     "autoload": {
         "psr-0": {
