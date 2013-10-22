@@ -1,51 +1,60 @@
 {
-    "name": "mouf/integration.hybridauth",
-    "description": "This package contains bindings between the Mouf and HybridAuth, a great library to implement social logins (on Facebook, Twitter, etc...).",
-    "keywords": ["integration", "hybridauth", "mouf", "splash", "facebook", "twitter", "google", "linkedin"],
-    "homepage": "http://mouf-php.com/packages/mouf/integration.hybridauth",
-    "type": "mouf-library",
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "David Négrier",
-            "email": "d.negrier@thecodingmachine.com",
-            "homepage": "http://mouf-php.com"
-        }
-    ],
-    "require": {
-    	"php": ">=5.3.0",
-    	"hybridauth/hybridauth": "dev-master",
-		"mouf/mvc.splash-common": "~4.0",
-		"mouf/utils.value.common-value": "~1.0",
-		"mouf/utils.action.action-interface": "~1.0",
-		"mouf/database.querywriter": "~3.0",
-		"mouf/security.userservice.extensions": "~1.0",
-		"mouf/database.patcher": "~1.0"
-    },
-    "autoload": {
-        "psr-0": {
-            "Mouf": "src/"
-        }
-    },
-    "extra": {
-	    "mouf": {
-	    	"logo": "logo.png",
-			"require-admin": [
-    			"src/HybridAuthAdmin.php"
-   			],
-   			"install": [
-			{
-				"type": "url",
-	    		"url": "hybridauthinstall/",
-	    		"description": "The install process of HybridAuth proposes to set up Facebook, Twitter or Google authentication and configures all instances."
-			}
+	"name" : "mouf/integration.hybridauth",
+	"description" : "This package contains bindings between the Mouf and HybridAuth, a great library to implement social logins (on Facebook, Twitter, etc...).",
+	"type" : "mouf-library",
+	"authors" : [{
+			"name" : "David Négrier",
+			"email" : "d.negrier@thecodingmachine.com",
+			"homepage" : "http://mouf-php.com"
+		}
+	],
+	"keywords" : [
+		"integration",
+		"hybridauth",
+		"mouf",
+		"splash",
+		"facebook",
+		"twitter",
+		"google",
+		"linkedin"
+	],
+	"homepage" : "http://mouf-php.com/packages/mouf/integration.hybridauth",
+	"license" : [
+		"MIT"
+	],
+	"require" : {
+		"mouf/database.patcher" : "~1.0",
+		"mouf/html.widgets.messageservice" : "~3.0",
+		"mouf/database.querywriter" : "~3.0",
+		"php" : ">=5.3.0",
+		"hybridauth/hybridauth" : "dev-master",
+		"mouf/security.userservice.extensions" : "~1.0",
+		"mouf/utils.action.action-interface" : "~1.0",
+		"mouf/utils.value.common-value" : "~1.0",
+		"mouf/mvc.splash-common" : "~4.0"
+	},
+	"autoload" : {
+		"psr-0" : {
+			"Mouf" : "src/"
+		}
+	},
+	"extra" : {
+		"mouf" : {
+			"install" : [{
+					"description" : "The install process of HybridAuth proposes to set up Facebook, Twitter or Google authentication and configures all instances.",
+					"type" : "url",
+					"url" : "hybridauthinstall/"
+				}
 			],
-			"doc": [
-	    		{
-	    			"title": "Advanced configuration",
-	    			"url": "doc/advanced.md"
-	    		}
-	    		]
-	    }
+			"logo" : "logo.png",
+			"doc" : [{
+					"title" : "Advanced configuration",
+					"url" : "doc/advanced.md"
+				}
+			],
+			"require-admin" : [
+				"src/HybridAuthAdmin.php"
+			]
+		}
 	}
 }
