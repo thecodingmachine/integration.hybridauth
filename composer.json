@@ -31,7 +31,7 @@
 		"mouf/security.userservice.extensions" : "~1.0",
 		"mouf/utils.action.action-interface" : "~1.0",
 		"mouf/utils.value.common-value" : "~1.0",
-		"mouf/mvc.splash-common" : "~4.0"
+		"mouf/mvc.splash-common" : ">=4.0,< 6.0"
 	},
 	"autoload" : {
 		"psr-0" : {
