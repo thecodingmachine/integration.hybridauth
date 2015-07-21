@@ -14,6 +14,7 @@ class GenericProvider implements  ProvidersInterface {
 	private $key;
 	private $secret;
 	private $scope;
+	private $wrapper;
 	
 	/**
 	 * The provider name (the key in the config array passed to HybridAuth constructor)
@@ -116,7 +117,26 @@ class GenericProvider implements  ProvidersInterface {
 		$this->scope = $scope;
 		return $this;
 	}
-	
+
+	/**
+	 * @return array
+	 */
+	public function getWrapper()
+	{
+		return $this->wrapper;
+	}
+
+	/**
+	 * If you want tu use additional provider you add to set this wrapper wich is an array. Just use Php code like this one:
+	 * return array('class'=>'Hybrid_Providers_Steam',
+	 * 'path' => ROOT_PATH.'vendor/hybridauth/hybridauth/additional-providers/hybridauth-steam/Providers/Steam.php');
+	 * @param array $wrapper
+	 */
+	public function setWrapper($wrapper)
+	{
+		$this->wrapper = $wrapper;
+	}
+
 	/**
 	 * The configuration array passed to HybridAuth constructor
 	 */
@@ -133,6 +153,9 @@ class GenericProvider implements  ProvidersInterface {
 		}
 		if ($this->scope) {
 			$ret['scope'] = $this->scope;
+		}
+		if ($this->wrapper) {
+			$ret['wrapper'] = $this->wrapper;
 		}
 		return $ret;
 	}
