@@ -139,6 +139,7 @@ class PerformSocialLoginAction implements ActionInterface {
 	 */
 	public function run() {
 		$providerName = ValueUtils::val($this->socialProviderName);
+		/* @var $user_profile \Hybrid_User_Profile */
 		$user_profile = ValueUtils::val($this->socialProfile);
 		$providerUid = $user_profile->identifier;
 		
@@ -164,22 +165,7 @@ class PerformSocialLoginAction implements ActionInterface {
 			$userId = $this->dbConnection->getOne($sql);
 			
 			if ($userId) {
-				
-				$sql = "INSERT INTO authentications (user_id, provider, provider_uid, email, display_name, first_name,
-					last_name, profile_url, website_url)
-				VALUES ("
-						.$this->dbConnection->quoteSmart($userId).","
-						.$this->dbConnection->quoteSmart($providerName).","
-						.$this->dbConnection->quoteSmart($user_profile->identifier).","
-						.$this->dbConnection->quoteSmart($user_profile->email).","
-						.$this->dbConnection->quoteSmart($user_profile->displayName).","
-						.$this->dbConnection->quoteSmart($user_profile->firstName).","
-						.$this->dbConnection->quoteSmart($user_profile->lastName).","
-						.$this->dbConnection->quoteSmart($user_profile->profileURL).","
-						.$this->dbConnection->quoteSmart($user_profile->webSiteURL)
-						.")";
-				
-				$this->dbConnection->exec($sql);
+				$this->insertIntoAuthentications($userId, $providerName, $user_profile);
 				
 				$userBean = $this->userDao->getUserById($userId);
 				$this->userService->loginWithoutPassword($userBean->getLogin());
@@ -191,32 +177,9 @@ class PerformSocialLoginAction implements ActionInterface {
 		}
 		
 		// 3- the user does not exist in database, we must create it.
-		$user = new SocialUserBean();
-		if ($user_profile->email) {
-			$user->setLogin($user_profile->email);
-			$user->setEmail($user_profile->email);
-		}
-		$user->setLogin($this->generateLogin($user_profile));
-		$user->setFirstName($user_profile->firstName);
-		$user->setLastName($user_profile->lastName);
+		$userId = $this->userManagerService->saveUser($user_profile);
 		
-		$userId = $this->userManagerService->saveUser($user);
-		
-		$sql = "INSERT INTO authentications (user_id, provider, provider_uid, email, display_name, first_name,
-					last_name, profile_url, website_url)
-				VALUES ("
-				.$this->dbConnection->quoteSmart($userId).","
-				.$this->dbConnection->quoteSmart($providerName).","
-				.$this->dbConnection->quoteSmart($user_profile->identifier).","
-				.$this->dbConnection->quoteSmart($user_profile->email).","
-				.$this->dbConnection->quoteSmart($user_profile->displayName).","
-				.$this->dbConnection->quoteSmart($user_profile->firstName).","
-				.$this->dbConnection->quoteSmart($user_profile->lastName).","
-				.$this->dbConnection->quoteSmart($user_profile->profileURL).","
-				.$this->dbConnection->quoteSmart($user_profile->webSiteURL)
-				.")";
-		
-		$this->dbConnection->exec($sql);
+		$this->insertIntoAuthentications($userId, $providerName, $user_profile);
 		
 		$userBean = $this->userDao->getUserById($userId);
 		$this->userService->loginWithoutPassword($userBean->getLogin());
@@ -224,6 +187,42 @@ class PerformSocialLoginAction implements ActionInterface {
 		foreach ($this->onUserCreated as $action) {
 			$action->run();
 		}
+	}
+	
+	private function insertIntoAuthentications($userId, $providerName, \Hybrid_User_Profile $user_profile) {
+		$sql = "INSERT INTO authentications (user_id, provider, provider_uid, profile_url, website_url,
+						photo_url, display_name, description, first_name, last_name, gender, language, age,
+						birth_day, birth_month, birth_year, email, email_verified, phone, address, country,
+						region, city, zip, created_at)
+				VALUES ("
+						.$this->dbConnection->quoteSmart($userId).","
+						.$this->dbConnection->quoteSmart($providerName).","
+						.$this->dbConnection->quoteSmart($user_profile->identifier).","
+						.$this->dbConnection->quoteSmart($user_profile->profileURL).","
+						.$this->dbConnection->quoteSmart($user_profile->webSiteURL).","
+						.$this->dbConnection->quoteSmart($user_profile->photoURL).","
+						.$this->dbConnection->quoteSmart($user_profile->displayName).","
+						.$this->dbConnection->quoteSmart($user_profile->description).","
+						.$this->dbConnection->quoteSmart($user_profile->firstName).","
+						.$this->dbConnection->quoteSmart($user_profile->lastName).","
+						.$this->dbConnection->quoteSmart($user_profile->gender).","
+						.$this->dbConnection->quoteSmart($user_profile->language).","
+						.$this->dbConnection->quoteSmart($user_profile->age).","
+						.$this->dbConnection->quoteSmart($user_profile->birthDay).","
+						.$this->dbConnection->quoteSmart($user_profile->birthMonth).","
+						.$this->dbConnection->quoteSmart($user_profile->birthYear).","
+						.$this->dbConnection->quoteSmart($user_profile->email).","
+						.$this->dbConnection->quoteSmart($user_profile->emailVerified).","
+						.$this->dbConnection->quoteSmart($user_profile->phone).","
+						.$this->dbConnection->quoteSmart($user_profile->address).","
+						.$this->dbConnection->quoteSmart($user_profile->country).","
+						.$this->dbConnection->quoteSmart($user_profile->region).","
+						.$this->dbConnection->quoteSmart($user_profile->city).","
+						.$this->dbConnection->quoteSmart($user_profile->zip).","
+						.$this->dbConnection->quoteSmart(date('Y-m-d H:i:s'))
+						.")";
+				
+		$this->dbConnection->exec($sql);
 	}
 	
 	/**
