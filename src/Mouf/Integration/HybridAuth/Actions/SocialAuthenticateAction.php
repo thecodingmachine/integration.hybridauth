@@ -118,7 +118,7 @@ class SocialAuthenticateAction implements ActionInterface {
 				$adapter->logout();
 				break;
 			}
-			$this->errorMessage->setValue($error);
+			$this->errorMessage->setValue($error.($e->getMessage()?' '.$e->getMessage():''));
 			$this->errorException->setValue($e);
 			foreach ($this->onFailure as $action) {
 				$action->run();

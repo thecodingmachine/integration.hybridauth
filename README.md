@@ -80,21 +80,23 @@ It MUST return the user ID.
 Here is a typical implementation, using TDBM:
 
 ```php
-	public function saveUser(AdvancedUserInterface $user) {
+	public function saveUser(\Hybrid_User_Profile $user) {
 		// Let's assume we fetch the userDao in the class
 		$userDao = $this->userDao;
-		if ($user->getId()) {
+		if ($user->identifier) {
 			// If we have an ID provided, let's fetch it
-			$userBean = $userDao->getUserById($user->getId());
-		} else {
+			$userBean = $userDao->getUserByLogin($user->identifier);
+		}
+        if(!$userBean) {
 			// Else, let's create a new bean
 			$userBean = $userDao->create();
+			$userBean->setLogin($user->identifier);
 		}
 		
 		// Let's map the fields from $user to the fields of $userBean
-		$userBean->setEmail($user->getEmail());
-		$userBean->setFirstName($user->getFirstName());
-		$userBean->setName($user->getLastName());
+		$userBean->setEmail($user->email);
+		$userBean->setFirstName($user->firstName);
+		$userBean->setName($user->lastName);
 		
 		// And let's save.
 		$userDao->save($userBean);
