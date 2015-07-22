@@ -80,7 +80,7 @@ It MUST return the user ID.
 Here is a typical implementation, using TDBM:
 
 ```php
-	public function saveUser(AdvancedUserInterface $user) {
+	public function saveUser(\Hybrid_User_Profile $user) {
 		// Let's assume we fetch the userDao in the class
 		$userDao = $this->userDao;
 		if ($user->identifier) {
