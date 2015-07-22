@@ -89,8 +89,8 @@ class HybridAuthInstallController extends Controller {
 		}
 		
 		// Let's start by performing basic checks about the instances we assume to exist.
-		if (!$this->moufManager->instanceExists("dbConnection")) {
-			$this->displayErrorMsg("The TDBM install process assumes your database connection instance is already created, and that the name of this instance is 'dbConnection'. Could not find the 'dbConnection' instance.");
+		if (!$this->moufManager->instanceExists("dbalConnection")) {
+			$this->displayErrorMsg("The TDBM install process assumes your database connection instance is already created, and that the name of this instance is 'dbalConnection'. Could not find the 'dbalConnection' instance.");
 			return;
 		}
 								
@@ -107,7 +107,7 @@ class HybridAuthInstallController extends Controller {
 	 */
 	public function generate($facebook = "", $facebook_id = "", $facebook_secret = "", $facebook_scope = "", 
 			$google = "", $google_id = "", $google_secret = "",
-			$twitter = "", $twitter_key = "", $twitter_secret = "",
+			$twitter = "", $twitter_id = "", $twitter_secret = "",
 			$redirect_login = "", $redirect_create = "", $redirect_failure = "",
 			$selfedit="false") {
 		$this->selfedit = $selfedit;
@@ -235,7 +235,7 @@ class HybridAuthInstallController extends Controller {
 		
 		
 		// These instances are expected to exist when the installer is run.
-		$dbConnection = $moufManager->getInstanceDescriptor('dbConnection');
+		$dbalConnection = $moufManager->getInstanceDescriptor('dbalConnection');
 		$userService = $moufManager->getInstanceDescriptor('userService');
 		$userMessageService = $moufManager->getInstanceDescriptor('userMessageService');
 		
@@ -306,7 +306,7 @@ class HybridAuthInstallController extends Controller {
 		$anonymousPerformSocialLoginAction->getConstructorArgumentProperty('socialProviderName')->setValue($socialProviderName);
 		$anonymousPerformSocialLoginAction->getConstructorArgumentProperty('socialProfile')->setValue($socialProfile);
 		$anonymousPerformSocialLoginAction->getConstructorArgumentProperty('findSocialUser')->setValue($anonymousSelect);
-		$anonymousPerformSocialLoginAction->getConstructorArgumentProperty('dbConnection')->setValue($dbConnection);
+		$anonymousPerformSocialLoginAction->getConstructorArgumentProperty('dbalConnection')->setValue($dbalConnection);
 		$anonymousPerformSocialLoginAction->getConstructorArgumentProperty('userService')->setValue($userService);
 		$anonymousPerformSocialLoginAction->getConstructorArgumentProperty('bindOnEmail')->setValue(true);
 		$anonymousPerformSocialLoginAction->getConstructorArgumentProperty('findUserIdFromMail')->setValue($anonymousSelect2);
