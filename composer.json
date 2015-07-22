@@ -23,9 +23,9 @@
 		"MIT"
 	],
 	"require" : {
-		"mouf/database.patcher" : "~1.0",
+		"mouf/database.patcher" : "~2.0",
 		"mouf/html.widgets.messageservice" : "~3.0",
-		"mouf/database.querywriter" : "~3.0",
+		"mouf/database.querywriter" : "~4.0",
 		"php" : ">=5.3.0",
 		"hybridauth/hybridauth" : "dev-master",
 		"mouf/security.userservice.extensions" : "~1.0",
