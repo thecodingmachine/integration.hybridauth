@@ -294,6 +294,8 @@ class HybridAuthInstallController extends Controller {
 			$hybridAuthFactory->getSetterProperty('setDebugFile')->setValue('');
 		}
 		
+		$hybridAuthUserServiceListener->getConstructorArgumentProperty('hybridAuthFactory')->setValue($hybridAuthFactory);
+		
 		$listeners = $userService->getSetterProperty('authenticationListeners')->getValue();
 		$listeners[] = $hybridAuthUserServiceListener;
 		$userService->getSetterProperty('authenticationListeners')->setValue($listeners);
