@@ -3,9 +3,20 @@ namespace Mouf\Integration\HybridAuth\Services;
 
 use Mouf\Security\UserService\AuthenticationListenerInterface;
 use Mouf\Security\UserService\UserServiceInterface;
+use Mouf\Integration\HybridAuth\HybridAuthFactory;
 
 class HybridAuthUserServiceListener implements AuthenticationListenerInterface {
 
+	/**
+	 * 
+	 * @var HybridAuthFactory
+	 */
+	private $hybridAuthFactory;
+	
+	public function __construct(HybridAuthFactory $hybridAuthFactory) {
+		$this->hybridAuthFactory = $hybridAuthFactory;
+	}
+	
 	/**
 	 * This method is called just after a log-in occurs.
 	 *
@@ -21,6 +32,7 @@ class HybridAuthUserServiceListener implements AuthenticationListenerInterface {
 	 * @param UserServiceInterface $userService The service that performed the log-out
 	*/
 	public function beforeLogOut(UserServiceInterface $userService) {
-		\Hybrid_Auth::logoutAllProviders();
+		$hybridAuth = $this->hybridAuthFactory->getHybridAuth();
+		$hybridAuth->logoutAllProviders();
 	}
 }
