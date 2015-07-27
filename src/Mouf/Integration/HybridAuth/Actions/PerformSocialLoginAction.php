@@ -10,7 +10,7 @@ use Doctrine\DBAL\Connection;
 use SQLParser\Query\Select;
 use Mouf\Security\UserService\UserServiceInterface;
 use Mouf\Security\UserService\UserDaoInterface;
-use Mouf\Security\UserService\UserManagerServiceInterface;
+use Mouf\Integration\HybridAuth\UserManagerServiceInterface;
 use Mouf\Integration\HybridAuth\SocialUserBean;
 use Mouf\Validator\MoufValidatorInterface;
 
