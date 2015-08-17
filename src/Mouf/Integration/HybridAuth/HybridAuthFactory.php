@@ -49,7 +49,11 @@ class HybridAuthFactory {
 	public function getHybridAuth() {
 		if (!$this->hybridAuth) {
 			// Note: base_url has been set to index.php explicitly (unlike stated in the docs) in case index.php is not the default file loaded.
-			$config = array("base_url" => "http://".$_SERVER['HTTP_HOST'].ROOT_URL.'vendor/hybridauth/hybridauth/hybridauth/index.php');
+			$url = 'http://';
+			if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] && $_SERVER['HTTPS'] != 'off') {
+				$url = 'https://';
+			}
+			$config = array("base_url" => $url.$_SERVER['HTTP_HOST'].ROOT_URL.'vendor/hybridauth/hybridauth/hybridauth/index.php');
 			foreach ($this->providers as $provider) {
 				$config['providers'][$provider->getProviderName()] = $provider->getConfigArray();
 			}
