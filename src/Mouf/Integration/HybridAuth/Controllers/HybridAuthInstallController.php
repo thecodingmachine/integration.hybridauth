@@ -246,7 +246,7 @@ class HybridAuthInstallController extends Controller {
 		$hybridAuthFactory = InstallUtils::getOrCreateInstance('hybridAuthFactory', 'Mouf\\Integration\\HybridAuth\\HybridAuthFactory', $moufManager);
 		$socialLoginErrorMessage = InstallUtils::getOrCreateInstance('socialLoginErrorMessage', 'Mouf\\Utils\\Value\\Variable', $moufManager);
 		$socialLoginException = InstallUtils::getOrCreateInstance('socialLoginException', 'Mouf\\Utils\\Value\\Variable', $moufManager);
-		$hybridAuthUserServiceListener = InstallUtils::getOrCreateInstance('hybridAuthUserServiceListener', 'Mouf\\Integration\\HybridAuth\\Services', $moufManager);
+		$hybridAuthUserServiceListener = InstallUtils::getOrCreateInstance('hybridAuthUserServiceListener', 'Mouf\\Integration\\HybridAuth\\Services\\HybridAuthUserServiceListener', $moufManager);
 		
 		$anonymousAssign = $moufManager->createInstance('Mouf\\Utils\\Action\\Assign');
 		$anonymousRequestParam = $moufManager->createInstance('Mouf\\Utils\\Value\\RequestParam');
@@ -296,9 +296,9 @@ class HybridAuthInstallController extends Controller {
 		
 		$hybridAuthUserServiceListener->getConstructorArgumentProperty('hybridAuthFactory')->setValue($hybridAuthFactory);
 		
-		$listeners = $userService->getSetterProperty('authenticationListeners')->getValue();
+		$listeners = $userService->getPublicFieldProperty('authenticationListeners')->getValue();
 		$listeners[] = $hybridAuthUserServiceListener;
-		$userService->getSetterProperty('authenticationListeners')->setValue($listeners);
+		$userService->getPublicFieldProperty('authenticationListeners')->setValue($listeners);
 		
 		$anonymousAssign->getConstructorArgumentProperty('variable')->setValue($socialProviderName);
 		$anonymousAssign->getConstructorArgumentProperty('value')->setValue($anonymousRequestParam);
