@@ -27,7 +27,7 @@
 		"mouf/html.widgets.messageservice" : "~3.0",
 		"mouf/database.querywriter" : "~3.0",
 		"php" : ">=5.3.0",
-		"hybridauth/hybridauth" : "dev-master",
+		"hybridauth/hybridauth" : "~2.5",
 		"mouf/security.userservice.extensions" : "~1.0",
 		"mouf/utils.action.action-interface" : "~1.0",
 		"mouf/utils.value.common-value" : "~1.0",
