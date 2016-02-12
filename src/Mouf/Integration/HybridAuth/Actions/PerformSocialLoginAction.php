@@ -6,11 +6,11 @@ use Mouf\Utils\Value\ValueInterface;
 use Mouf\Utils\Value\Variable;
 use Mouf\Utils\Value\ValueUtils;
 use Mouf\Integration\HybridAuth\HybridAuthFactory;
-use Mouf\Database\DBConnection\ConnectionInterface;
+use Doctrine\DBAL\Connection;
 use SQLParser\Query\Select;
 use Mouf\Security\UserService\UserServiceInterface;
 use Mouf\Security\UserService\UserDaoInterface;
-use Mouf\Security\UserService\UserManagerServiceInterface;
+use Mouf\Integration\HybridAuth\UserManagerServiceInterface;
 use Mouf\Integration\HybridAuth\SocialUserBean;
 use Mouf\Validator\MoufValidatorInterface;
 
@@ -46,9 +46,9 @@ class PerformSocialLoginAction implements ActionInterface {
 	/**
 	 * The connection to the database
 	 *
-	 * @var ConnectionInterface
+	 * @var Connection
 	 */
-	private $dbConnection;
+	private $dbalConnection;
 
 	/**
 	 * The user service. It will be used to log the user.
@@ -106,7 +106,7 @@ class PerformSocialLoginAction implements ActionInterface {
 	 * @param Variable $socialProviderName
 	 * @param Variable $socialProfile
 	 * @param Select $findSocialUser
-	 * @param ConnectionInterface $dbConnection
+	 * @param Connection $dbalConnection
 	 * @param UserManagerServiceInterface $userManagerService
 	 * @param bool $bindOnEmail When a user logs in via Facebook or another social network for the first time, if the user has already an account on the site, should we try to merge the 2 accounts based on the email address?
 	 * @param Select $findUserIdFromMail A request that finds a user ID based on its mail address.
@@ -114,12 +114,12 @@ class PerformSocialLoginAction implements ActionInterface {
 	 * @param ActionInterface[] $onUserCreated List of actions to be performed if the user did not exist in database and has been just created. You will usually redirect the user to some place in your application.
 	 */
 	public function __construct(Variable $socialProviderName, Variable $socialProfile, Select $findSocialUser,
-			ConnectionInterface $dbConnection, UserDaoInterface $userDao, UserServiceInterface $userService, UserManagerServiceInterface $userManagerService, $bindOnEmail = true, Select $findUserIdFromMail = null,
+			Connection $dbalConnection, UserDaoInterface $userDao, UserServiceInterface $userService, UserManagerServiceInterface $userManagerService, $bindOnEmail = true, Select $findUserIdFromMail = null,
 			array $onUserLogged = array(), array $onUserCreated = array()) {
 		$this->socialProviderName = $socialProviderName;
 		$this->socialProfile = $socialProfile;
 		$this->findSocialUser = $findSocialUser;
-		$this->dbConnection = $dbConnection;
+		$this->dbalConnection = $dbalConnection;
 		$this->userDao = $userDao;
 		$this->userService = $userService;
 		$this->userManagerService = $userManagerService;
@@ -144,9 +144,9 @@ class PerformSocialLoginAction implements ActionInterface {
 		$providerUid = $user_profile->identifier;
 		
 		$sql = $this->findSocialUser->toSql(array("provider"=>$providerName,
-											"provider_uid"=>$providerUid), $this->dbConnection);
+											"provider_uid"=>$providerUid), $this->dbalConnection);
 		
-		$userId = $this->dbConnection->getOne($sql);
+		$userId = $this->dbalConnection->fetchColumn($sql);
 		
 		// 1 - check if user already have authenticated using this provider before
 		if ($userId) {
@@ -162,7 +162,7 @@ class PerformSocialLoginAction implements ActionInterface {
 		// if authentication does not exist, but the email address returned  by the provider does exist in database,
 		if($user_profile->email && $this->bindOnEmail){
 			$sql = $this->findUserIdFromMail->toSql(array("email"=>$user_profile->email));
-			$userId = $this->dbConnection->getOne($sql);
+			$userId = $this->dbalConnection->fetchColumn($sql);
 			
 			if ($userId) {
 				$this->insertIntoAuthentications($userId, $providerName, $user_profile);
@@ -195,34 +195,41 @@ class PerformSocialLoginAction implements ActionInterface {
 						birth_day, birth_month, birth_year, email, email_verified, phone, address, country,
 						region, city, zip, created_at)
 				VALUES ("
-						.$this->dbConnection->quoteSmart($userId).","
-						.$this->dbConnection->quoteSmart($providerName).","
-						.$this->dbConnection->quoteSmart($user_profile->identifier).","
-						.$this->dbConnection->quoteSmart($user_profile->profileURL).","
-						.$this->dbConnection->quoteSmart($user_profile->webSiteURL).","
-						.$this->dbConnection->quoteSmart($user_profile->photoURL).","
-						.$this->dbConnection->quoteSmart($user_profile->displayName).","
-						.$this->dbConnection->quoteSmart($user_profile->description).","
-						.$this->dbConnection->quoteSmart($user_profile->firstName).","
-						.$this->dbConnection->quoteSmart($user_profile->lastName).","
-						.$this->dbConnection->quoteSmart($user_profile->gender).","
-						.$this->dbConnection->quoteSmart($user_profile->language).","
-						.$this->dbConnection->quoteSmart($user_profile->age).","
-						.$this->dbConnection->quoteSmart($user_profile->birthDay).","
-						.$this->dbConnection->quoteSmart($user_profile->birthMonth).","
-						.$this->dbConnection->quoteSmart($user_profile->birthYear).","
-						.$this->dbConnection->quoteSmart($user_profile->email).","
-						.$this->dbConnection->quoteSmart($user_profile->emailVerified).","
-						.$this->dbConnection->quoteSmart($user_profile->phone).","
-						.$this->dbConnection->quoteSmart($user_profile->address).","
-						.$this->dbConnection->quoteSmart($user_profile->country).","
-						.$this->dbConnection->quoteSmart($user_profile->region).","
-						.$this->dbConnection->quoteSmart($user_profile->city).","
-						.$this->dbConnection->quoteSmart($user_profile->zip).","
-						.$this->dbConnection->quoteSmart(date('Y-m-d H:i:s'))
+						.$this->dbDataOrNull($userId).","
+						.$this->dbDataOrNull($providerName).","
+						.$this->dbDataOrNull($user_profile->identifier).","
+						.$this->dbDataOrNull($user_profile->profileURL).","
+						.$this->dbDataOrNull($user_profile->webSiteURL).","
+						.$this->dbDataOrNull($user_profile->photoURL).","
+						.$this->dbDataOrNull($user_profile->displayName).","
+						.$this->dbDataOrNull($user_profile->description).","
+						.$this->dbDataOrNull($user_profile->firstName).","
+						.$this->dbDataOrNull($user_profile->lastName).","
+						.$this->dbDataOrNull($user_profile->gender).","
+						.$this->dbDataOrNull($user_profile->language).","
+						.$this->dbDataOrNull($user_profile->age).","
+						.$this->dbDataOrNull($user_profile->birthDay).","
+						.$this->dbDataOrNull($user_profile->birthMonth).","
+						.$this->dbDataOrNull($user_profile->birthYear).","
+						.$this->dbDataOrNull($user_profile->email).","
+						.$this->dbDataOrNull($user_profile->emailVerified).","
+						.$this->dbDataOrNull($user_profile->phone).","
+						.$this->dbDataOrNull($user_profile->address).","
+						.$this->dbDataOrNull($user_profile->country).","
+						.$this->dbDataOrNull($user_profile->region).","
+						.$this->dbDataOrNull($user_profile->city).","
+						.$this->dbDataOrNull($user_profile->zip).","
+						.$this->dbDataOrNull(date('Y-m-d H:i:s'))
 						.")";
 				
-		$this->dbConnection->exec($sql);
+		$this->dbalConnection->exec($sql);
+	}
+	
+	private function dbDataOrNull($value) {
+		if($value) {
+			return $value;
+		}
+		return 'null';
 	}
 	
 	/**
