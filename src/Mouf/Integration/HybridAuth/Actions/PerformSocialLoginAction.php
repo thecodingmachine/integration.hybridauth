@@ -190,39 +190,32 @@ class PerformSocialLoginAction implements ActionInterface {
 	}
 	
 	private function insertIntoAuthentications($userId, $providerName, \Hybrid_User_Profile $user_profile) {
-		$sql = "INSERT INTO authentications (user_id, provider, provider_uid, profile_url, website_url,
-						photo_url, display_name, description, first_name, last_name, gender, language, age,
-						birth_day, birth_month, birth_year, email, email_verified, phone, address, country,
-						region, city, zip, created_at)
-				VALUES ("
-						.$this->dbalConnection->quote($userId).","
-						.$this->dbalConnection->quote($providerName).","
-						.$this->dbalConnection->quote($user_profile->identifier).","
-						.($user_profile->profileURL?$this->dbalConnection->quote($user_profile->profileURL):'NULL').","
-						.($user_profile->webSiteURL?$this->dbalConnection->quote($user_profile->webSiteURL):'NULL').","
-						.($user_profile->photoURL?$this->dbalConnection->quote($user_profile->photoURL):'NULL').","
-						.($user_profile->displayName?$this->dbalConnection->quote($user_profile->displayName):'NULL').","
-						.($user_profile->description?$this->dbalConnection->quote($user_profile->description):'NULL').","
-						.($user_profile->firstName?$this->dbalConnection->quote($user_profile->firstName):'NULL').","
-						.($user_profile->lastName?$this->dbalConnection->quote($user_profile->lastName):'NULL').","
-						.($user_profile->gender?$this->dbalConnection->quote($user_profile->gender):'NULL').","
-						.($user_profile->language?$this->dbalConnection->quote($user_profile->language):'NULL').","
-						.($user_profile->age?$this->dbalConnection->quote($user_profile->age):'NULL').","
-						.($user_profile->birthDay?$this->dbalConnection->quote($user_profile->birthDay):'NULL').","
-						.($user_profile->birthMonth?$this->dbalConnection->quote($user_profile->birthMonth):'NULL').","
-						.($user_profile->birthYear?$this->dbalConnection->quote($user_profile->birthYear):'NULL').","
-						.($user_profile->email?$this->dbalConnection->quote($user_profile->email):'NULL').","
-						.($user_profile->emailVerified?$this->dbalConnection->quote($user_profile->emailVerified):'NULL').","
-						.($user_profile->phone?$this->dbalConnection->quote($user_profile->phone):'NULL').","
-						.($user_profile->address?$this->dbalConnection->quote($user_profile->address):'NULL').","
-						.($user_profile->country?$this->dbalConnection->quote($user_profile->country):'NULL').","
-						.($user_profile->region?$this->dbalConnection->quote($user_profile->region):'NULL').","
-						.($user_profile->city?$this->dbalConnection->quote($user_profile->city):'NULL').","
-						.($user_profile->zip?$this->dbalConnection->quote($user_profile->zip):'NULL').","
-						.$this->dbalConnection->quote(date('Y-m-d H:i:s'))
-						.")";
-				
-		$this->dbalConnection->exec($sql);
+		$this->dbalConnection->insert('authentications', ['user_id' => $userId,
+                                                            'provider' => $providerName,
+                                                            'provider_uid' => $user_profile->identifier,
+                                                            'profile_url' => $user_profile->profileURL,
+                                                            'website_url' => $user_profile->webSiteURL,
+                                                            'photo_url' => $user_profile->photoURL,
+                                                            'display_name' => $user_profile->displayName,
+                                                            'description' => $user_profile->description,
+                                                            'first_name' => $user_profile->firstName,
+                                                            'last_name' => $user_profile->lastName,
+                                                            'gender' => $user_profile->gender,
+                                                            'language' => $user_profile->language,
+                                                            'age' => $user_profile->age,
+                                                            'birth_day' => $user_profile->birthDay,
+                                                            'birth_month' => $user_profile->birthMonth,
+                                                            'birth_year' => $user_profile->birthYear,
+                                                            'email' => $user_profile->email,
+                                                            'email_verified' => $user_profile->emailVerified,
+                                                            'phone' => $user_profile->phone,
+                                                            'address' => $user_profile->address,
+                                                            'country' => $user_profile->country,
+                                                            'region' => $user_profile->region,
+                                                            'city' => $user_profile->city,
+                                                            'zip' => $user_profile->zip,
+															'created_at' => date('Y-m-d H:i:s')
+        ]);
 	}
 	
 	/**
