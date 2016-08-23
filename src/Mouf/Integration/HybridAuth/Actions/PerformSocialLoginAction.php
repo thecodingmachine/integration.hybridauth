@@ -222,7 +222,7 @@ class PerformSocialLoginAction implements ActionInterface {
 		if($value) {
 			return $value;
 		}
-		return 'null';
+		return null;
 	}
 	
 	/**
