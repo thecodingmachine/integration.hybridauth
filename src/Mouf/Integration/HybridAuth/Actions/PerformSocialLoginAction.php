@@ -190,32 +190,39 @@ class PerformSocialLoginAction implements ActionInterface {
 	}
 	
 	private function insertIntoAuthentications($userId, $providerName, \Hybrid_User_Profile $user_profile) {
-		$this->dbalConnection->insert('authentications', ['user_id' => $userId,
-                                                            'provider' => $providerName,
-                                                            'provider_uid' => $user_profile->identifier,
-                                                            'profile_url' => $user_profile->profileURL,
-                                                            'website_url' => $user_profile->webSiteURL,
-                                                            'photo_url' => $user_profile->photoURL,
-                                                            'display_name' => $user_profile->displayName,
-                                                            'description' => $user_profile->description,
-                                                            'first_name' => $user_profile->firstName,
-                                                            'last_name' => $user_profile->lastName,
-                                                            'gender' => $user_profile->gender,
-                                                            'language' => $user_profile->language,
-                                                            'age' => $user_profile->age,
-                                                            'birth_day' => $user_profile->birthDay,
-                                                            'birth_month' => $user_profile->birthMonth,
-                                                            'birth_year' => $user_profile->birthYear,
-                                                            'email' => $user_profile->email,
-                                                            'email_verified' => $user_profile->emailVerified,
-                                                            'phone' => $user_profile->phone,
-                                                            'address' => $user_profile->address,
-                                                            'country' => $user_profile->country,
-                                                            'region' => $user_profile->region,
-                                                            'city' => $user_profile->city,
-                                                            'zip' => $user_profile->zip,
+		$this->dbalConnection->insert('authentications', ['user_id' => $this->dbDataOrNull($userId),
+                                                            'provider' => $this->dbDataOrNull($providerName),
+                                                            'provider_uid' => $this->dbDataOrNull($user_profile->identifier),
+                                                            'profile_url' => $this->dbDataOrNull($user_profile->profileURL),
+                                                            'website_url' => $this->dbDataOrNull($user_profile->webSiteURL),
+                                                            'photo_url' => $this->dbDataOrNull($user_profile->photoURL),
+                                                            'display_name' => $this->dbDataOrNull($user_profile->displayName),
+                                                            'description' => $this->dbDataOrNull($user_profile->description),
+                                                            'first_name' => $this->dbDataOrNull($user_profile->firstName),
+                                                            'last_name' => $this->dbDataOrNull($user_profile->lastName),
+                                                            'gender' => $this->dbDataOrNull($user_profile->gender),
+                                                            'language' => $this->dbDataOrNull($user_profile->language),
+                                                            'age' => $this->dbDataOrNull($user_profile->age),
+                                                            'birth_day' => $this->dbDataOrNull($user_profile->birthDay),
+                                                            'birth_month' => $this->dbDataOrNull($user_profile->birthMonth),
+                                                            'birth_year' => $this->dbDataOrNull($user_profile->birthYear),
+                                                            'email' => $this->dbDataOrNull($user_profile->email),
+                                                            'email_verified' => $this->dbDataOrNull($user_profile->emailVerified),
+                                                            'phone' => $this->dbDataOrNull($user_profile->phone),
+                                                            'address' => $this->dbDataOrNull($user_profile->address),
+                                                            'country' => $this->dbDataOrNull($user_profile->country),
+                                                            'region' => $this->dbDataOrNull($user_profile->region),
+                                                            'city' => $this->dbDataOrNull($user_profile->city),
+                                                            'zip' => $this->dbDataOrNull($user_profile->zip),
 															'created_at' => date('Y-m-d H:i:s')
         ]);
+	}
+	
+	private function dbDataOrNull($value) {
+		if($value) {
+			return $value;
+		}
+		return 'null';
 	}
 	
 	/**
