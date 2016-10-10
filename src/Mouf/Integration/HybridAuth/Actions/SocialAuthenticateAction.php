@@ -104,6 +104,7 @@ class SocialAuthenticateAction implements ActionInterface {
 			$adapter = $hybridAuth->authenticate( $providerName );
 			$user_profile = $adapter->getUserProfile();
 		} catch (\Exception $e) {
+			$error = '';
 			switch( $e->getCode() ){
 				case 0 : $error = "Unspecified error."; break;
 				case 1 : $error = "Hybriauth configuration error."; break;
